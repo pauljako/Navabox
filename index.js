@@ -62,6 +62,10 @@ function updateUI(currentTitle, playlistData) {
         <td style="color: ${color};"> ${item["album"]}</td>
     `;
 
+    queue_item.onclick = () => {
+      gotoSongJukebox(index)
+    }
+
     document.getElementById("queue_list").appendChild(queue_item);
   });
 }
@@ -140,9 +144,7 @@ function startJukebox() {
   });
 }
 
-function skipSongJukebox() {
-  const newIndex =
-    parseInt(window.lastStateData["jukeboxPlaylist"]["currentIndex"]) + 1;
+function gotoSongJukebox(newIndex) {
   fetch(
     `${HOST}/rest/jukeboxControl?action=skip&u=${encodeURI(USERNAME)}&p=${encodeURI(PASSWORD)}&c=Navabox&f=json&v=1.13.0&index=${newIndex}`,
   ).then((response) => {
@@ -150,18 +152,12 @@ function skipSongJukebox() {
   });
 }
 
+function skipSongJukebox() {
+  gotoSongJukebox(parseInt(window.lastStateData["jukeboxPlaylist"]["currentIndex"]) + 1);
+}
+
 function previousSongJukebox() {
-  const newIndex =
-    parseInt(window.lastStateData["jukeboxPlaylist"]["currentIndex"]) - 1;
-  if (newIndex < 0) {
-    stopJukebox();
-    return;
-  }
-  fetch(
-    `${HOST}/rest/jukeboxControl?action=skip&u=${encodeURI(USERNAME)}&p=${encodeURI(PASSWORD)}&c=Navabox&f=json&v=1.13.0&index=${newIndex}`,
-  ).then((response) => {
-    getMediaSession();
-  });
+  gotoSongJukebox(parseInt(window.lastStateData["jukeboxPlaylist"]["currentIndex"]) - 1);
 }
 
 navigator.mediaSession.setActionHandler("play", () => {
