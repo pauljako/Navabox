@@ -1,19 +1,3 @@
-function getCookie(cname) {
-  let name = cname + "=";
-  let decodedCookie = document.cookie;
-  let ca = decodedCookie.split(';');
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
-    }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
-    }
-  }
-  return "";
-}
-
 const generateRandomString = (length) => {
   let result = '';
   const characters =
@@ -25,10 +9,10 @@ const generateRandomString = (length) => {
   return result;
 };
 
-const HOST = getCookie("host");
-const USERNAME = getCookie("username");
-const PASSWORD = getCookie("token");
-const SALT = getCookie("salt");
+const HOST = localStorage.getItem("host") == null ? "" : localStorage.getItem("host");
+const USERNAME = localStorage.getItem("username");
+const PASSWORD = localStorage.getItem("subsonic-token"); // This will make it use the same credentials from the Navidrome WebUI
+const SALT = localStorage.getItem("subsonic-salt");
 
 function setCredentials() {
   const salt = generateRandomString(14)
@@ -38,12 +22,10 @@ function setCredentials() {
 
   const token = CryptoJS.MD5(password + salt)
 
-  const expiry = new Date(Date.now() + 100000000000).toUTCString() // IDK When this is...
-
-  document.cookie = `host=${host}; expires=${expiry};`
-  document.cookie = `username=${username}; expires=${expiry};`
-  document.cookie = `token=${token}; expires=${expiry};`
-  document.cookie = `salt=${salt}; expires=${expiry};`
+  localStorage.setItem("host", host)
+  localStorage.setItem("username", username)
+  localStorage.setItem("subsonic-token", token)
+  localStorage.setItem("subsonic-salt", salt)
 
   window.location.reload()
 }
