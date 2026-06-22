@@ -14,20 +14,36 @@ function getCookie(cname) {
   return "";
 }
 
+const generateRandomString = (length) => {
+  let result = '';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+
 const HOST = getCookie("host");
 const USERNAME = getCookie("username");
-const PASSWORD = getCookie("password");
+const PASSWORD = getCookie("token");
+const SALT = getCookie("salt");
 
 function setCredentials() {
+  const salt = generateRandomString(14)
   const host = document.getElementById("inputServer").value
   const username = document.getElementById("inputUsername").value
   const password = document.getElementById("inputPassword").value
+
+  const token = CryptoJS.MD5(password + salt)
 
   const expiry = new Date(Date.now() + 100000000000).toUTCString() // IDK When this is...
 
   document.cookie = `host=${host}; expires=${expiry};`
   document.cookie = `username=${username}; expires=${expiry};`
-  document.cookie = `password=${password}; expires=${expiry};`
+  document.cookie = `token=${token}; expires=${expiry};`
+  document.cookie = `salt=${salt}; expires=${expiry};`
 
   window.location.reload()
 }
@@ -56,7 +72,7 @@ function updateUI(currentTitle, playlistData) {
 
     queue_item.innerHTML = `
         <th style="color: ${color};" scope="row">${index + 1}</th>
-        <td style="padding: .25rem;"><img style = "height: 48px;" src="${HOST}/rest/getCoverArt?id=${item["coverArt"]}&u=${encodeURI(USERNAME)}&p=${encodeURI(PASSWORD)}&c=Navabox&f=json&v=1.13.0"></td>
+        <td style="padding: .25rem;"><img style = "height: 48px;" src="${HOST}/rest/getCoverArt?id=${item["coverArt"]}&u=${encodeURI(USERNAME)}&t=${encodeURI(PASSWORD)}&s=${encodeURI(SALT)}&c=Navabox&f=json&v=1.13.0"></td>
         <td style="color: ${color};"> ${item["title"]}</td>
         <td style="color: ${color};"> ${item["artist"]}</td>
         <td style="color: ${color};"> ${item["album"]}</td>
@@ -72,7 +88,7 @@ function updateUI(currentTitle, playlistData) {
 
 function getMediaSession() {
   fetch(
-    `${HOST}/rest/jukeboxControl?action=get&u=${encodeURI(USERNAME)}&p=${encodeURI(PASSWORD)}&c=Navabox&f=json&v=1.13.0`,
+    `${HOST}/rest/jukeboxControl?action=get&u=${encodeURI(USERNAME)}&t=${encodeURI(PASSWORD)}&s=${encodeURI(SALT)}&c=Navabox&f=json&v=1.13.0`,
   ).then((response) => {
     if (!response.ok) {
       $("#loginModal").modal("show")
@@ -111,7 +127,7 @@ function getMediaSession() {
           album: currentTitle["album"],
           artwork: [
             {
-              src: `${HOST}/rest/getCoverArt?id=${currentTitle["coverArt"]}&u=${encodeURI(USERNAME)}&p=${encodeURI(PASSWORD)}&c=Navabox&f=json&v=1.13.0`,
+              src: `${HOST}/rest/getCoverArt?id=${currentTitle["coverArt"]}&u=${encodeURI(USERNAME)}&t=${encodeURI(PASSWORD)}&s=${encodeURI(SALT)}&c=Navabox&f=json&v=1.13.0`,
             },
           ],
         });
@@ -130,7 +146,7 @@ function getMediaSession() {
 
 function stopJukebox() {
   fetch(
-    `${HOST}/rest/jukeboxControl?action=stop&u=${encodeURI(USERNAME)}&p=${encodeURI(PASSWORD)}&c=Navabox&f=json&v=1.13.0`,
+    `${HOST}/rest/jukeboxControl?action=stop&u=${encodeURI(USERNAME)}&t=${encodeURI(PASSWORD)}&s=${encodeURI(SALT)}&c=Navabox&f=json&v=1.13.0`,
   ).then((response) => {
     getMediaSession();
   });
@@ -138,7 +154,7 @@ function stopJukebox() {
 
 function startJukebox() {
   fetch(
-    `${HOST}/rest/jukeboxControl?action=start&u=${encodeURI(USERNAME)}&p=${encodeURI(PASSWORD)}&c=Navabox&f=json&v=1.13.0`,
+    `${HOST}/rest/jukeboxControl?action=start&u=${encodeURI(USERNAME)}&t=${encodeURI(PASSWORD)}&s=${encodeURI(SALT)}&c=Navabox&f=json&v=1.13.0`,
   ).then((response) => {
     getMediaSession();
   });
@@ -146,7 +162,7 @@ function startJukebox() {
 
 function gotoSongJukebox(newIndex) {
   fetch(
-    `${HOST}/rest/jukeboxControl?action=skip&u=${encodeURI(USERNAME)}&p=${encodeURI(PASSWORD)}&c=Navabox&f=json&v=1.13.0&index=${newIndex}`,
+    `${HOST}/rest/jukeboxControl?action=skip&u=${encodeURI(USERNAME)}&t=${encodeURI(PASSWORD)}&s=${encodeURI(SALT)}&c=Navabox&f=json&v=1.13.0&index=${newIndex}`,
   ).then((response) => {
     getMediaSession();
   });
