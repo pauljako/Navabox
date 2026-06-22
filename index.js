@@ -47,7 +47,7 @@ function updateUI(currentTitle, playlistData) {
 
     let color = "black";
     if (playlistData["currentIndex"] == index) {
-      color = "red"
+      color = "#007BFF"
     } else if (playlistData["currentIndex"] > index) {
       color = "gray"
     }
